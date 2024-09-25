@@ -15,14 +15,14 @@ public abstract class BaseCompoundTask : ICompoundTask
 
     public DecompositionEnum Decompose(IContext ctx, int startIndex, out Queue<ITask> result)
     {
-        if (ctx.LogDecomposition)
+        if (ctx.OpenLog)
         {
             ctx.CurrentDecompositionDepth++;
         }
 
         var status = OnDecompose(ctx, startIndex, out result);
 
-        if (ctx.LogDecomposition)
+        if (ctx.OpenLog)
         {
             ctx.CurrentDecompositionDepth--;
         }
@@ -42,7 +42,7 @@ public abstract class BaseCompoundTask : ICompoundTask
         {
             var result = condition.IsValid(ctx);
 
-            if (ctx.LogDecomposition)
+            if (ctx.OpenLog)
             {
                 Log(ctx,
                     $"CompoundTask.IsValid:{(result ? "Success" : "Failed")}:{condition.Name} is{(result ? "" : " not")} valid!",

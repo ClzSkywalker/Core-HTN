@@ -1,10 +1,10 @@
 using CoreHTN.Context;
 using CoreHTN.Task;
-using CoreHTN.Task.CompoundTask;
+using CoreHTN.Task.PrimitiveTask;
 
 namespace CoreHTN.Planner;
 
-public class Planner<T> where T:IContext
+public class Planner<T> where T : IContext
 {
     public void Tick(Domain<T> domain, T ctx)
     {
@@ -12,29 +12,80 @@ public class Planner<T> where T:IContext
         {
             throw new Exception("Context was not initialized!");
         }
-        
-        var decompositionStatus = DecompositionEnum.Failed;
-        var isTryingToReplacePlan = false;
 
-        // 设定计划/找到当前计划/找到下一个计划
-        
-        // 执行计划/找到下一个计划
-        
-        
         if (ShouldFindNewPlan(ctx))
         {
-            domain.FindPlan(ctx, out Queue<ITask> plan);
+            domain.FindPlan(ctx, out var plan);
             ctx.PlannerState.Plan = plan;
+            if (ctx.PlannerState.Plan.Count == 0)
+            {
+                return;
+            }
             ctx.PlannerState.CurrentTask = plan.Dequeue();
-            
         }
-        
-        
-        
+
+        // find next plan
+        if (CanFindNextTask(ctx))
+        {
+            if (!SelectNextTask(ctx))
+            {
+                return;
+            }
+        }
+
+        Execute(ctx);
     }
-    
+
     private bool ShouldFindNewPlan(T ctx)
     {
         return ctx.IsDirty || (ctx.PlannerState.CurrentTask == null && ctx.PlannerState.Plan.Count == 0);
+    }
+
+    private bool CanFindNextTask(T ctx)
+    {
+        return ctx.PlannerState.CurrentTask == null && ctx.PlannerState.Plan.Count > 0;
+    }
+
+    private bool SelectNextTask(T ctx)
+    {
+        ctx.PlannerState.CurrentTask = ctx.PlannerState.Plan.Dequeue();
+        return ctx.PlannerState.CurrentTask != null && ctx.PlannerState.CurrentTask.IsValid(ctx);
+    }
+
+    private void Execute(T ctx)
+    {
+        if (ctx.PlannerState.CurrentTask is not IPrimitiveTask task)
+        {
+            if (ctx.OpenLog)
+            {
+                Console.WriteLine($"Executing compound task: {ctx.PlannerState.CurrentTask}");
+            }
+
+            return;
+        }
+
+        if (task.Operator == null)
+        {
+            throw new Exception($"Task {task} has no operator!");
+        }
+
+        var status = task.Operator.Update(ctx);
+        switch (status)
+        {
+            case TaskEnum.Failure:
+                task.Operator.Aborted(ctx);
+                ctx.ContextState = ContextState.Planning;
+                break;
+            case TaskEnum.Continue:
+                ctx.PlannerState.CurrentTask = null;
+                break;
+            case TaskEnum.Success:
+                ctx.PlannerState.CurrentTask = null;
+                break;
+            case TaskEnum.Running:
+                break;
+        }
+
+        ctx.PlannerState.LastStatus = status;
     }
 }

@@ -12,7 +12,7 @@ public abstract class BaseContext<TState> : IContext
     public ContextState ContextState { get; set; } = ContextState.Executing;
     public virtual IPlannerState PlannerState { get; }
     public int CurrentDecompositionDepth { get; set; }
-    public bool LogDecomposition { get; }
+    public bool OpenLog { get; }
 
     public abstract List<TState> WorldState { get; }
 
@@ -30,7 +30,7 @@ public abstract class BaseContext<TState> : IContext
     public virtual void Log(string name, string description, int depth, ITask task,
         ConsoleColor color = ConsoleColor.White)
     {
-        if (LogDecomposition == false)
+        if (OpenLog == false)
         {
             return;
         }
@@ -46,7 +46,7 @@ public abstract class BaseContext<TState> : IContext
     public void Log(string name, string description, int depth, ICondition condition,
         ConsoleColor color = ConsoleColor.DarkGreen)
     {
-        if (LogDecomposition == false)
+        if (OpenLog == false)
         {
             return;
         }
@@ -57,7 +57,7 @@ public abstract class BaseContext<TState> : IContext
     public void Log(string name, string description, int depth, IEffect effect,
         ConsoleColor color = ConsoleColor.DarkYellow)
     {
-        if (LogDecomposition == false)
+        if (OpenLog == false)
         {
             return;
         }

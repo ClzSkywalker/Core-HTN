@@ -29,7 +29,7 @@ public class ActionEffect<T> : IEffect where T : IContext
     {
         if (ctx is T c)
         {
-            if (ctx.LogDecomposition)
+            if (ctx.OpenLog)
             {
                 ctx.Log(Name, $"ActionEffect.Apply:{Type}", ctx.CurrentDecompositionDepth + 1, this);
             }

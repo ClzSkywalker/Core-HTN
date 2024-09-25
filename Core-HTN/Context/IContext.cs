@@ -18,8 +18,7 @@ public interface IContext
     ContextState ContextState { get; set; } 
     IPlannerState PlannerState { get; }
     int CurrentDecompositionDepth { get; set; }
-    // 
-    bool LogDecomposition { get; }
+    bool OpenLog { get; }
     void Log(string name, string description, int depth, ITask task, ConsoleColor color = ConsoleColor.White);
     void Log(string name, string description, int depth, ICondition condition, ConsoleColor color = ConsoleColor.DarkGreen);
     void Log(string name, string description, int depth, IEffect effect, ConsoleColor color = ConsoleColor.DarkYellow);

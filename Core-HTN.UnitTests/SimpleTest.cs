@@ -25,10 +25,9 @@ public class SimpleTest
         public bool Done { get; set; }
     }
 
-    [TestMethod]
-    public void TestMethod1()
+    Domain<MyContext> buildDomain()
     {
-        var domain = new DomainBuilder<MyContext>("human")
+        return new DomainBuilder<MyContext>("human")
             .Select("State1")
             .Condition("has 1 and 2", (ctx) => ctx.HasState(WorldState.State1) && ctx.HasState(WorldState.State2))
             .Action("A1")
@@ -63,14 +62,29 @@ public class SimpleTest
             })
             .End().End()
             .Build();
+    }
+
+    [TestMethod]
+    public void TestTick()
+    {
+        var domain = buildDomain();
         var ctx1 = new MyContext();
         var planner = new Planner<MyContext>();
         ctx1.Init();
-        int count = 0;
+        var count = 0;
         while (!ctx1.Done && count < 4)
         {
             count++;
             planner.Tick(domain, ctx1);
         }
+    }
+
+    [TestMethod]
+    public void TestFindPlan()
+    {
+        var ctx = new MyContext();
+        var domain = buildDomain();
+        domain.FindPlan(ctx, out var plan);
+        Console.WriteLine($"{plan.Count}");
     }
 }

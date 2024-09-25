@@ -6,5 +6,5 @@ public interface IPlannerState
 {
     ITask? CurrentTask { get; set; }
     Queue<ITask> Plan { get; set; }
-    TaskStatus LastStatus { get; set; } 
+    TaskEnum LastStatus { get; set; } 
 }

@@ -12,7 +12,7 @@ public class SelectorCompoundTask : BaseCompoundTask
         Plan.Clear();
         for (var taskIndex = startIndex; taskIndex < SubsTasks.Count; taskIndex++)
         {
-            if (ctx.LogDecomposition)
+            if (ctx.OpenLog)
             {
                 Log(ctx, $"Selector.OnDecompose:Task index: {taskIndex}: {SubsTasks[taskIndex].Name}");
             }
@@ -40,7 +40,7 @@ public class SelectorCompoundTask : BaseCompoundTask
     {
         if (!task.IsValid(ctx))
         {
-            if (ctx.LogDecomposition)
+            if (ctx.OpenLog)
             {
                 Log(ctx, $"Selector.OnDecomposeTask:Failed:Task {task.Name}.IsValid returned false!", ConsoleColor.Red);
             }
@@ -61,7 +61,7 @@ public class SelectorCompoundTask : BaseCompoundTask
 
         result = Plan;
         var status = result.Count == 0 ? DecompositionEnum.Failed : DecompositionEnum.Succeeded;
-        if (ctx.LogDecomposition)
+        if (ctx.OpenLog)
         {
             Log(ctx, $"Selector.OnDecomposeTask:{status}!",
                 status == DecompositionEnum.Succeeded ? ConsoleColor.Green : ConsoleColor.Red);
@@ -73,7 +73,7 @@ public class SelectorCompoundTask : BaseCompoundTask
     protected override void OnDecomposePrimitiveTask(IContext ctx, IPrimitiveTask task, int taskIndex,
         out Queue<ITask> result)
     {
-        if (ctx.LogDecomposition)
+        if (ctx.OpenLog)
         {
             Log(ctx, $"Selector.OnDecomposeTask:Pushed {task.Name} to plan!", ConsoleColor.Blue);
         }
@@ -93,7 +93,7 @@ public class SelectorCompoundTask : BaseCompoundTask
         if (status == DecompositionEnum.Rejected ||
             status == DecompositionEnum.Failed)
         {
-            if (ctx.LogDecomposition)
+            if (ctx.OpenLog)
             {
                 Log(ctx, $"Selector.OnDecomposeCompoundTask:{status}: Decomposing {task.Name} was rejected.",
                     ConsoleColor.Red);
@@ -106,7 +106,7 @@ public class SelectorCompoundTask : BaseCompoundTask
         while (subPlan.Count > 0)
         {
             var p = subPlan.Dequeue();
-            if (ctx.LogDecomposition)
+            if (ctx.OpenLog)
             {
                 Log(ctx, $"Selector.OnDecomposeCompoundTask:Decomposing {task.Name}:Pushed {p.Name} to plan!",
                     ConsoleColor.Blue);
@@ -118,7 +118,7 @@ public class SelectorCompoundTask : BaseCompoundTask
         result = Plan;
         var s = result.Count == 0 ? DecompositionEnum.Failed : DecompositionEnum.Succeeded;
 
-        if (ctx.LogDecomposition)
+        if (ctx.OpenLog)
         {
             Log(ctx, $"Selector.OnDecomposeCompoundTask:{s}!",
                 s == DecompositionEnum.Succeeded ? ConsoleColor.Green : ConsoleColor.Red);

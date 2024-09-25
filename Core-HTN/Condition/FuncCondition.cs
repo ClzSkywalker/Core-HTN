@@ -16,7 +16,7 @@ public class FuncCondition<T>(string name, Func<T, bool> func) : ICondition
         }
 
         var result = _func.Invoke(ctxT);
-        if (ctx.LogDecomposition)
+        if (ctx.OpenLog)
         {
             ctx.Log(Name, $"FuncCondition.IsValid:{result}", ctx.CurrentDecompositionDepth+1, this, result ? ConsoleColor.DarkGreen : ConsoleColor.DarkRed);
         }

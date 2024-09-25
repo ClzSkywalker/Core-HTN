@@ -36,7 +36,7 @@ public class PrimitiveTask : IPrimitiveTask
     {
         if (ctx.ContextState == ContextState.Planning)
         {
-            if (ctx.LogDecomposition)
+            if (ctx.OpenLog)
             {
                 Log(ctx, $"PrimitiveTask.ApplyEffects", ConsoleColor.Yellow);
             }
@@ -50,7 +50,7 @@ public class PrimitiveTask : IPrimitiveTask
 
     public bool IsValid(IContext ctx)
     {
-        if (ctx.LogDecomposition)
+        if (ctx.OpenLog)
         {
             Log(ctx, $"PrimitiveTask.IsValid check");
         }
@@ -58,7 +58,7 @@ public class PrimitiveTask : IPrimitiveTask
         foreach (var condition in Conditions)
         {
             var result = condition.IsValid(ctx);
-            if (ctx.LogDecomposition)
+            if (ctx.OpenLog)
             {
                 Log(ctx, $"PrimitiveTask.IsValid: {result}", result ? ConsoleColor.DarkGreen : ConsoleColor.DarkRed);
             }
