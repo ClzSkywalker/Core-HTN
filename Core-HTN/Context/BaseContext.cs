@@ -9,7 +9,7 @@ public abstract class BaseContext<TState> : IContext
 {
     public bool IsInitialized { get; private set; }
     public bool IsDirty { get; set; }
-    public ContextState ContextState { get; set; } = ContextState.Executing;
+    public ContextState ContextState { get; set; } = ContextState.Planning;
     public virtual IPlannerState PlannerState { get; }
     public int CurrentDecompositionDepth { get; set; }
     public bool OpenLog { get; }

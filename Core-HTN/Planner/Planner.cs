@@ -21,6 +21,7 @@ public class Planner<T> where T : IContext
             {
                 return;
             }
+
             ctx.PlannerState.CurrentTask = plan.Dequeue();
         }
 
@@ -38,18 +39,24 @@ public class Planner<T> where T : IContext
 
     private bool ShouldFindNewPlan(T ctx)
     {
-        return ctx.IsDirty || (ctx.PlannerState.CurrentTask == null && ctx.PlannerState.Plan.Count == 0);
+        if (ctx.PlannerState.LastStatus != TaskEnum.Running && ctx.PlannerState.Plan.Count == 0)
+        {
+            ctx.ContextState = ContextState.Planning;
+        }
+
+        return ctx.IsDirty ||
+               ctx.ContextState == ContextState.Planning;
     }
 
     private bool CanFindNextTask(T ctx)
     {
-        return ctx.PlannerState.CurrentTask == null && ctx.PlannerState.Plan.Count > 0;
+        return ctx.PlannerState is { LastStatus: TaskEnum.Success, Plan.Count: > 0 };
     }
 
     private bool SelectNextTask(T ctx)
     {
         ctx.PlannerState.CurrentTask = ctx.PlannerState.Plan.Dequeue();
-        return ctx.PlannerState.CurrentTask != null && ctx.PlannerState.CurrentTask.IsValid(ctx);
+        return ctx.PlannerState.CurrentTask.IsValid(ctx);
     }
 
     private void Execute(T ctx)
@@ -76,14 +83,12 @@ public class Planner<T> where T : IContext
                 task.Operator.Aborted(ctx);
                 ctx.ContextState = ContextState.Planning;
                 break;
-            case TaskEnum.Continue:
-                ctx.PlannerState.CurrentTask = null;
-                break;
             case TaskEnum.Success:
-                ctx.PlannerState.CurrentTask = null;
                 break;
             case TaskEnum.Running:
                 break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
 
         ctx.PlannerState.LastStatus = status;

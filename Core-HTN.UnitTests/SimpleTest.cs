@@ -2,6 +2,7 @@ using CoreHTN;
 using CoreHTN.Context;
 using CoreHTN.Planner;
 using CoreHTN.Task;
+using CoreHTN.Task.CompoundTask;
 
 namespace Core_HTN.UnitTests;
 
@@ -17,7 +18,7 @@ public class SimpleTest
         State5
     };
 
-    class MyContext : BaseContext<WorldState>
+    private class MyContext : BaseContext<WorldState>
     {
         public override List<WorldState> WorldState { get; } = [];
         public override IPlannerState PlannerState { get; } = new DefaultPlannerState();
@@ -25,33 +26,29 @@ public class SimpleTest
         public bool Done { get; set; }
     }
 
-    Domain<MyContext> buildDomain()
+    private static Domain<MyContext> BuildDomain()
     {
-        return new DomainBuilder<MyContext>("human")
-            .Select("State1")
-            .Condition("has 1 and 2", (ctx) => ctx.HasState(WorldState.State1) && ctx.HasState(WorldState.State2))
-            .Action("A1")
-            .Do((ctx) =>
-            {
-                Console.WriteLine("A1");
-                ctx.HasState(WorldState.State3);
-                return TaskEnum.Success;
-            })
-            .End()
-            .End()
-            .Select("State2")
+        var user = new List<String>() { "user1", "user2" };
+        var builder = new DomainBuilder<MyContext>("human");
+        var task1 = builder
+            .Select("deliver task")
+            .Condition("find idle user", (ctx) => user.Count > 0)
+            .CompoundTask<SequenceCompoundTask>("select item")
+            .End().End();
+
+        builder.Select("State2")
             .Condition("no a", ctx => !ctx.HasState(WorldState.State1))
             .Action("A2")
             .Do((ctx) =>
             {
                 Console.WriteLine("A2");
                 ctx.SetState(WorldState.State1);
-                ctx.HasState(WorldState.State2);
+                ctx.SetState(WorldState.State2);
                 return TaskEnum.Success;
             })
-            .End()
-            .End()
-            .Select("Done")
+            .End().End();
+
+        builder.Select("Done")
             .Condition("down", (ctx) => ctx.HasState(WorldState.State3))
             .Action("Done")
             .Do((ctx) =>
@@ -60,14 +57,14 @@ public class SimpleTest
                 ctx.Done = true;
                 return TaskEnum.Success;
             })
-            .End().End()
-            .Build();
+            .End().End();
+        return builder.Build();
     }
 
     [TestMethod]
     public void TestTick()
     {
-        var domain = buildDomain();
+        var domain = BuildDomain();
         var ctx1 = new MyContext();
         var planner = new Planner<MyContext>();
         ctx1.Init();
@@ -83,7 +80,7 @@ public class SimpleTest
     public void TestFindPlan()
     {
         var ctx = new MyContext();
-        var domain = buildDomain();
+        var domain = BuildDomain();
         domain.FindPlan(ctx, out var plan);
         Console.WriteLine($"{plan.Count}");
     }

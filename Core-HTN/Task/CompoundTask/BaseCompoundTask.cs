@@ -74,6 +74,13 @@ public abstract class BaseCompoundTask : ICompoundTask
         ctx.Log(Name, description, ctx.CurrentDecompositionDepth, this, color);
     }
 
+    /// <summary>
+    /// The selector is taken as the root node for parsing the tree.
+    /// </summary>
+    /// <param name="ctx"></param>
+    /// <param name="startIndex"></param>
+    /// <param name="result"></param>
+    /// <returns></returns>
     protected abstract DecompositionEnum OnDecompose(IContext ctx, int startIndex, out Queue<ITask> result);
 
     protected abstract DecompositionEnum OnDecomposeTask(IContext ctx, ITask task, int taskIndex,
