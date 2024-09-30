@@ -9,55 +9,49 @@ namespace Core_HTN.UnitTests;
 [TestClass]
 public class SimpleTest
 {
-    enum WorldState
+    enum MyWorldState
     {
-        State1,
-        State2,
-        State3,
-        State4,
-        State5
     };
 
-    private class MyContext : BaseContext<WorldState>
+    private class MyContext : BaseContext<MyWorldState>
     {
-        public override List<WorldState> WorldState { get; } = [];
-        public override IPlannerState PlannerState { get; } = new DefaultPlannerState();
-
-        public bool Done { get; set; }
+        protected override List<MyWorldState> WorldState => [];
     }
 
     private static Domain<MyContext> BuildDomain()
     {
-        var user = new List<String>() { "user1", "user2" };
+        var materialObject = new List<string>() { "item1", "item2" };
         var builder = new DomainBuilder<MyContext>("human");
-        var task1 = builder
-            .Select("deliver task")
-            .Condition("find idle user", (ctx) => user.Count > 0)
+        builder
             .CompoundTask<SequenceCompoundTask>("select item")
-            .End().End();
-
-        builder.Select("State2")
-            .Condition("no a", ctx => !ctx.HasState(WorldState.State1))
-            .Action("A2")
-            .Do((ctx) =>
+            .Condition("find idle user", (_) => materialObject.Count > 0)
+            .Action("pick item")
+            .Do((_) =>
             {
-                Console.WriteLine("A2");
-                ctx.SetState(WorldState.State1);
-                ctx.SetState(WorldState.State2);
+                materialObject.RemoveAt(0);
+                Console.WriteLine("pick item");
+                return TaskEnum.Success;
+            })
+            .End()
+            .Action("deliver item")
+            .Do((_) =>
+            {
+                Console.WriteLine("deliver item");
+                return TaskEnum.Success;
+            })
+            .End()
+            .End();
+
+        builder.Select("walk")
+            .Action("walk")
+            .Do((_) =>
+            {
+                Console.WriteLine("walk:find item");
+                materialObject.Add("item3");
                 return TaskEnum.Success;
             })
             .End().End();
 
-        builder.Select("Done")
-            .Condition("down", (ctx) => ctx.HasState(WorldState.State3))
-            .Action("Done")
-            .Do((ctx) =>
-            {
-                Console.WriteLine("Done");
-                ctx.Done = true;
-                return TaskEnum.Success;
-            })
-            .End().End();
         return builder.Build();
     }
 
@@ -65,14 +59,14 @@ public class SimpleTest
     public void TestTick()
     {
         var domain = BuildDomain();
-        var ctx1 = new MyContext();
+        var ctx = new MyContext();
         var planner = new Planner<MyContext>();
-        ctx1.Init();
+        ctx.Init();
         var count = 0;
-        while (!ctx1.Done && count < 4)
+        while (count < 10)
         {
             count++;
-            planner.Tick(domain, ctx1);
+            planner.Tick(domain, ctx);
         }
     }
 

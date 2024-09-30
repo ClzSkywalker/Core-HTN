@@ -10,11 +10,11 @@ public abstract class BaseContext<TState> : IContext
     public bool IsInitialized { get; private set; }
     public bool IsDirty { get; set; }
     public ContextState ContextState { get; set; } = ContextState.Planning;
-    public virtual IPlannerState PlannerState { get; }
+    public virtual IPlannerState PlannerState { get; }= new DefaultPlannerState();
     public int CurrentDecompositionDepth { get; set; }
-    public bool OpenLog { get; }
+    public bool OpenLog => false;
 
-    public abstract List<TState> WorldState { get; }
+    protected abstract List<TState> WorldState { get; }
 
     public bool HasState(TState state)
     {

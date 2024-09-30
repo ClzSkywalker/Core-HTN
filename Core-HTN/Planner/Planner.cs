@@ -23,6 +23,7 @@ public class Planner<T> where T : IContext
             }
 
             ctx.PlannerState.CurrentTask = plan.Dequeue();
+            ctx.PlannerState.LastStatus = TaskEnum.Running;
         }
 
         // find next plan
@@ -39,7 +40,8 @@ public class Planner<T> where T : IContext
 
     private bool ShouldFindNewPlan(T ctx)
     {
-        if (ctx.PlannerState.LastStatus != TaskEnum.Running && ctx.PlannerState.Plan.Count == 0)
+        if (ctx.PlannerState.LastStatus == TaskEnum.Failure ||
+            ctx.PlannerState.LastStatus != TaskEnum.Running && ctx.PlannerState.Plan.Count == 0)
         {
             ctx.ContextState = ContextState.Planning;
         }
@@ -56,6 +58,7 @@ public class Planner<T> where T : IContext
     private bool SelectNextTask(T ctx)
     {
         ctx.PlannerState.CurrentTask = ctx.PlannerState.Plan.Dequeue();
+        ctx.PlannerState.LastStatus = TaskEnum.Running;
         return ctx.PlannerState.CurrentTask.IsValid(ctx);
     }
 
